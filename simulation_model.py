@@ -7,6 +7,7 @@ class DiscreteVarSimulation:
         self._probs = probs
         self._sim_time = sim_time
         self._sim_time_left = sim_time
+        self._sim_history = []
         self._log = log
         self.validate_series()
         self.gen_sim_event_pool()
@@ -16,18 +17,11 @@ class DiscreteVarSimulation:
         self._event_pool = [event for repeats in [[e[i] for j in range(
             round(p[i]*time))] for i in range(len(e))] for event in repeats]
 
-    def validate_series(self):
-        if len(self._events) != len(self._probs):
-            raise ValueError(
-                'Events and probabilities list lengths are not equal')
-        if sum(self._probs) != 1.0:
-            raise ValueError(
-                'Full event set probabilities sum is not equal to 1')
-
     def random_event(self):
         cur_event = random.choice(self._event_pool)
         self._event_pool.remove(cur_event)
         self._sim_time_left -= 1
+        self._sim_history.append(cur_event)
         return cur_event
 
     def feed_random_events(self, time):
@@ -38,3 +32,22 @@ class DiscreteVarSimulation:
             cur_event = self.random_event()
             if self._log:
                 print(f'T:{self._sim_time-self._sim_time_left} E:{cur_event}')
+
+    def get_sim_dist_series(self):
+        hist = self._sim_history
+        events = self._events
+        time_elapsed = self._sim_time - self._sim_time_left
+        dist_series = {e: hist.count(e)/time_elapsed for e in events}
+        return dist_series
+
+    def validate_series(self):
+        if len(self._events) != len(self._probs):
+            raise ValueError(
+                'Events and probabilities list lengths are not equal')
+        if sum(self._probs) != 1.0:
+            raise ValueError(
+                'Full event set probabilities sum is not equal to 1')
+
+    def reset(self):
+        self._sim_time_left = self._sim_time
+        self._sim_history = []
