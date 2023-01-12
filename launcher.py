@@ -4,6 +4,7 @@ from statistics import mean
 from simulation_model import DiscreteVarSimulation
 from probability_theory_utils import *
 from chart_builder import *
+from report_builder import ReportBuilder
 
 # Task constant givens
 SEGMENT_BOTTOM = 3
@@ -49,6 +50,9 @@ class Launcher:
             },
             'sim': {
                 'exp_val': sim_exp_val, 'dispersion': sim_dispersion, 'seg_prob': sim_seg_prob
+            },
+            'err': {
+                'exp_val': get_abs_error(ref_exp_val, sim_exp_val), 'dispersion': get_abs_error(ref_dispersion, sim_dispersion), 'seg_prob': get_abs_error(ref_seg_prob, sim_seg_prob)
             }
         }
 
@@ -60,34 +64,38 @@ class Launcher:
         if((sim_time_to-sim_time_from) % sim_time_step != 0):
             raise ValueError(
                 f'Simulation time segment size is not a multiple of step size: ({sim_time_to}-{sim_time_from})/${sim_time_step} is not integer')
+        # create empty report
+        report = ReportBuilder()
         # loop through experiment time sizes
-        for time in range(sim_time_from, sim_time_to, sim_time_step):
+        for time in range(sim_time_from, sim_time_to+1, sim_time_step):
             # generate random probs for full events set
             event_probs = gen_exact_full_event_set_probs(len(events))
             print(f'Generated event probs: {event_probs}')
             # create simulation model
             model = DiscreteVarSimulation(events, event_probs, time)
             # create list for experiment records
-            experimet_records = []
+            experiment_records = []
             # repeat experiment for given number of times
             for i in range(exp_number):
                 experiment_result = self.run_individual_experiment(
                     model, events, event_probs, time, demo)
                 # save record
-                experimet_records.append(experiment_result)
+                experiment_records.append(experiment_result)
                 # reset model to initial state
                 model.reset()
             average_errors = {
-                'exp_val': round(mean([get_abs_error(rec['ref']['exp_val'], rec['sim']['exp_val']) for rec in experimet_records]), 4),
-                'dispersion': round(mean([get_abs_error(rec['ref']['dispersion'], rec['sim']['dispersion']) for rec in experimet_records]), 4),
-                'seg_prob': round(mean([get_abs_error(rec['ref']['seg_prob'], rec['sim']['seg_prob']) for rec in experimet_records]), 4)
+                'exp_val': round(mean([rec['err']['exp_val'] for rec in experiment_records]), 4),
+                'dispersion': round(mean([rec['err']['dispersion'] for rec in experiment_records]), 4),
+                'seg_prob': round(mean([rec['err']['seg_prob'] for rec in experiment_records]), 4)
             }
             print(
-                f'Average absolute errors: ε(E(X))={average_errors["exp_val"]}, ε(D(X))={average_errors["dispersion"]}, ε(P(3≤X≤5))={average_errors["seg_prob"]}')
+                f'Average absolute errors: ε(E)={average_errors["exp_val"]}, ε(D)={average_errors["dispersion"]}, ε(P)={average_errors["seg_prob"]}')
+            report.write_experiments_section(
+                experiment_records, time, event_probs)
+        # save report file
+        report.finish()
 
 
-# sim_time = 120
-# event_probs = [0.1, 0.15, 0.3, 0.2, 0.13, 0.12]
 launcher = Launcher()
 params = {'run': None, 'sim-time': None, 'event-probs': None, 'experiments-number': None,
           'sim-time-from': None, 'sim-time-to': None, 'sim-time-step': None, 'demo': False}
