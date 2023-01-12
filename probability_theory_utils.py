@@ -62,3 +62,7 @@ def gen_exact_full_event_set_probs(events_num, prob_prec=2):
         probs = gen_full_event_set_probs(events_num, prob_prec)
         sum_check = sum(probs)
     return probs
+
+
+def get_abs_error(ref_val, sim_val):
+    return abs(ref_val-sim_val) / ref_val

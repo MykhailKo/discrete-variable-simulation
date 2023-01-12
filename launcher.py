@@ -1,5 +1,5 @@
-from email.mime import base
 from sys import argv
+from statistics import mean
 
 from simulation_model import DiscreteVarSimulation
 from probability_theory_utils import *
@@ -67,10 +67,23 @@ class Launcher:
             print(f'Generated event probs: {event_probs}')
             # create simulation model
             model = DiscreteVarSimulation(events, event_probs, time)
+            # create list for experiment records
+            experimet_records = []
             # repeat experiment for given number of times
             for i in range(exp_number):
                 experiment_result = self.run_individual_experiment(
                     model, events, event_probs, time, demo)
+                # save record
+                experimet_records.append(experiment_result)
+                # reset model to initial state
+                model.reset()
+            average_errors = {
+                'exp_val': round(mean([get_abs_error(rec['ref']['exp_val'], rec['sim']['exp_val']) for rec in experimet_records]), 4),
+                'dispersion': round(mean([get_abs_error(rec['ref']['dispersion'], rec['sim']['dispersion']) for rec in experimet_records]), 4),
+                'seg_prob': round(mean([get_abs_error(rec['ref']['seg_prob'], rec['sim']['seg_prob']) for rec in experimet_records]), 4)
+            }
+            print(
+                f'Average absolute errors: ε(E(X))={average_errors["exp_val"]}, ε(D(X))={average_errors["dispersion"]}, ε(P(3≤X≤5))={average_errors["seg_prob"]}')
 
 
 # sim_time = 120

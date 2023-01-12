@@ -56,3 +56,4 @@ class DiscreteVarSimulation:
     def reset(self):
         self._sim_time_left = self._sim_time
         self._sim_history = []
+        self.gen_sim_event_pool()
