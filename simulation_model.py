@@ -15,7 +15,12 @@ class DiscreteVarSimulation:
     def gen_sim_event_pool(self):
         time, e, p = self._sim_time, self._events, self._probs
         self._event_pool = [event for repeats in [[e[i] for j in range(
-            round(p[i]*time))] for i in range(len(e))] for event in repeats]
+            round(p[i]*time + 0.01))] for i in range(len(e))] for event in repeats]
+        event_count_left = [p[i]*time -
+                            round(p[i]*time) for i in range(len(p))]
+        for i in range(time - len(self._event_pool)):
+            self._event_pool.append(event_count_left.pop(
+                event_count_left.index(max(event_count_left))))
 
     def random_event(self):
         cur_event = random.choice(self._event_pool)
