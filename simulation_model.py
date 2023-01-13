@@ -35,8 +35,8 @@ class DiscreteVarSimulation:
                 'Feed time is longer than leftover simulation time')
         for t in range(time):
             cur_event = self.random_event()
-            if self._log:
-                print(f'T:{self._sim_time-self._sim_time_left} E:{cur_event}')
+            # if self._log:
+            #     print(f'T:{self._sim_time-self._sim_time_left} E:{cur_event}')
 
     def get_sim_dist_series(self):
         hist = self._sim_history

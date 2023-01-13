@@ -106,8 +106,8 @@ for p in argv[1:]:
     print(f'Setting param {key} to {value}')
 if params['run'] == 'individual':
     event_probs = list(map(float, params['event-probs'].split(',')))
-    launcher.run_individual_experiment(
-        EVENTS, event_probs, int(params['sim-time']))
+    launcher.run_individual_experiment(None,
+                                       EVENTS, event_probs, int(params['sim-time']))
 elif params['run'] == 'statistical':
     launcher.run_statistical_experiment(
         EVENTS, int(params['experiments-number']), int(params['sim-time-from']), int(params['sim-time-to']), int(params['sim-time-step']), params['demo'])
